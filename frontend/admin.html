@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="marine-theme-page admin-theme">
+
+<div class="report-container admin-panel-container">
+
+    <h2 class="admin-title">🌊 MarineGuard Admin Panel</h2>
+<p class="admin-subtitle">Manage and review reported marine pollution cases</p>
+
+<div style="text-align:center; margin:20px 0;">
+    <a href="analytics.html" class="admin-nav-btn">📊 View Analytics</a>
+    <a href="chatbot.html" class="admin-nav-btn">🤖 AI Assistant</a>
+</div>
+
+<div class="emergency-alert">
+    <div class="emergency-icon">🚨</div>
+    <div>
+        <h3>Emergency Pollution Alert</h3>
+        <p id="emergencyAlertText">Checking for high-severity pollution reports...</p>
+    </div>
+</div>
+
+    <h3 class="admin-section-title">📋 Pollution Reports</h3>
+
+    <div class="admin-export">
+    <button onclick="exportAdminReports()">📥 Export Reports</button>
+</div>
+    <div class="admin-filters">
+
+    <input
+        type="text"
+        id="reportSearch"
+        placeholder="🔍 Search by location..."
+    >
+
+    <select id="typeFilter">
+        <option value="">All Pollution Types</option>
+        <option value="Plastic Waste">Plastic Waste</option>
+        <option value="Oil Spill">Oil Spill</option>
+        <option value="Chemical Waste">Chemical Waste</option>
+        <option value="Sewage">Sewage</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <select id="severityFilter">
+        <option value="">All Severities</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+    </select>
+
+    <select id="statusFilter">
+        <option value="">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="Investigating">Investigating</option>
+        <option value="Resolved">Resolved</option>
+    </select>
+
+</div>
+<div class="admin-table-wrapper"></div>
+
+    <table id="adminReportsTable" border="1" cellpadding="10">
+        <thead>
+           <tr>
+    <th>ID</th>
+    <th>Location</th>
+    <th>Pollution Type</th>
+    <th>Severity</th>
+    <th>Priority</th>
+    <th>Status</th>
+    <th>Photo</th>
+    <th>Lab Report</th>
+    <th>Details</th>
+    <th>Action</th>
+</tr>
+        </thead>
+
+        <tbody>
+        </tbody>
+    </table>
+    </div>
+
+</div>
+<script>
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "government") {
+        alert("Access denied. Government Authority only.");
+        window.location.href = "dashboard.html";
+    }
+</script>
+
+<script src="admin.js"></script>
+
+</body>
+</html>

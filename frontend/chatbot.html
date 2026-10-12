@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Chatbot</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="marine-theme-page chatbot-theme">
+
+<div class="chat-container">
+
+   <div class="chat-header">
+    <div class="chat-header-icon">🤖</div>
+    <div>
+        <h1>MarineGuard AI Assistant</h1>
+        <p>Smart Marine Pollution Analysis & Decision Support</p>
+        <span class="online-status">● Online</span>
+    </div>
+</div>
+
+    <div class="ai-tools">
+
+    <button onclick="analyzeLatestReport()">
+    🤖 Analyze Report
+</button>
+
+    <button onclick="analyzePollutionCause()">
+    🏭 Cause Analyzer
+</button>
+    <button onclick="analyzeHealthRisk()">
+    🩺 Health Risk
+</button>
+
+    <button onclick="generateExecutiveSummary()">
+    📋 Executive Summary
+</button>
+
+    <button onclick="showTamilResponse()">
+    🌐 Tamil
+</button>
+
+<button onclick="showHindiResponse()">
+    🌐 Hindi
+</button>
+
+    <button onclick="startVoiceQuestion()">
+        🎤 Voice Question
+    </button>
+
+    <button onclick="checkEmergencyPollution()">
+        🚨 Emergency Alert
+    </button>
+
+<div class="suggested-title">
+    💡 Suggested Questions
+</div>
+
+<div class="suggested-questions">
+
+    <button onclick="setAIQuestion('What is marine pollution?')">
+        What is marine pollution?
+    </button>
+
+    <button onclick="setAIQuestion('How can marine pollution be prevented?')">
+        How can it be prevented?
+    </button>
+
+    <button onclick="setAIQuestion('What are the effects of plastic pollution?')">
+        Effects of plastic pollution?
+    </button>
+
+    <button onclick="setAIQuestion('How does oil pollution affect marine life?')">
+        Effects of oil pollution?
+    </button>
+
+</div>
+
+<div id="chatBox" class="chat-box">
+
+
+    <div id="chatBox" class="chat-box">
+
+       <div class="bot-message welcome-message">
+    <strong>👋 Welcome to MarineGuard AI Assistant!</strong><br><br>
+
+    I can help you with:<br>
+    🔍 Pollution report analysis<br>
+    🏭 Possible pollution causes<br>
+    🩺 Health risk information<br>
+    📋 Executive summaries<br>
+    🌐 Tamil & Hindi assistance<br>
+    🎤 Voice questions<br>
+    🚨 Emergency pollution alerts<br><br>
+
+    <span>Ask me a question or select an AI tool above.</span>
+</div>
+    </div>
+
+    <div class="chat-input">
+
+        <input
+            type="text"
+            id="userInput"
+            placeholder="Type your question..."
+        >
+
+        <button id="sendBtn">Send</button>
+
+    </div>
+
+</div>
+
+<script>
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "citizen" && userRole !== "government") {
+        alert("Please login first.");
+        window.location.href = "login.html";
+    }
+</script>
+
+<script src="script.js"></script>
+
+<script>
+
+    async function generateExecutiveSummary() {
+
+    const chatBox = document.getElementById("chatBox");
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "bot-message";
+    botMsg.textContent = "📋 Generating AI Executive Summary...";
+    chatBox.appendChild(botMsg);
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/reports"
+        );
+
+        const reports = await response.json();
+
+        if (reports.length === 0) {
+            botMsg.textContent =
+                "📋 No pollution reports are currently available.";
+            return;
+        }
+
+        const total = reports.length;
+
+        const high = reports.filter(
+            report => report[2] === "High"
+        ).length;
+
+        const medium = reports.filter(
+            report => report[2] === "Medium"
+        ).length;
+
+        const low = reports.filter(
+            report => report[2] === "Low"
+        ).length;
+
+        const locations = [
+            ...new Set(reports.map(report => report[4]))
+        ];
+
+        botMsg.innerHTML = `
+            <strong>📋 MarineGuard AI Executive Summary</strong><br><br>
+
+            📊 <strong>Total Reports:</strong> ${total}<br>
+
+            🔴 <strong>High Severity:</strong> ${high}<br>
+
+            🟠 <strong>Medium Severity:</strong> ${medium}<br>
+
+            🟢 <strong>Low Severity:</strong> ${low}<br>
+
+            📍 <strong>Affected Locations:</strong>
+            ${locations.join(", ")}<br><br>
+
+            💡 <strong>AI Recommendation:</strong><br>
+            ${
+                high > 0
+                ? "High-severity pollution has been detected. Priority inspection and monitoring are recommended."
+                : "No high-severity reports are currently detected. Continue routine monitoring."
+            }
+        `;
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+
+        console.error(error);
+
+        botMsg.textContent =
+            "Unable to generate the executive summary.";
+    }
+}
+async function analyzeLatestReport() {
+
+    const chatBox = document.getElementById("chatBox");
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "bot-message";
+    botMsg.textContent = "🤖 Analyzing latest pollution report...";
+    chatBox.appendChild(botMsg);
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/reports"
+        );
+
+        const reports = await response.json();
+
+        if (reports.length === 0) {
+            botMsg.textContent =
+                "No pollution reports are currently available.";
+            return;
+        }
+
+        const report = reports[0];
+
+        botMsg.innerHTML = `
+            <strong>🤖 MarineGuard Report Analysis</strong><br><br>
+
+            📍 <strong>Location:</strong> ${report[4]}<br>
+            🌊 <strong>Pollution Type:</strong> ${report[1]}<br>
+            ⚠️ <strong>Severity:</strong> ${report[2]}<br>
+            📅 <strong>Date:</strong> ${report[3]}<br><br>
+
+            <strong>Analysis:</strong><br>
+            This report indicates <strong>${report[2]}</strong>-severity
+            ${report[1]} pollution at ${report[4]}.
+            ${
+                report[2] === "High"
+                ? " Priority inspection and monitoring are recommended."
+                : report[2] === "Medium"
+                ? " Preventive monitoring is recommended."
+                : " Routine monitoring is recommended."
+            }
+        `;
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+
+        console.error(error);
+
+        botMsg.textContent =
+            "Unable to analyze the pollution report.";
+    }
+}
+async function analyzePollutionCause() {
+
+    const chatBox = document.getElementById("chatBox");
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "bot-message";
+    botMsg.textContent = "🏭 Analyzing possible pollution causes...";
+    chatBox.appendChild(botMsg);
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/reports"
+        );
+
+        const reports = await response.json();
+
+        if (reports.length === 0) {
+            botMsg.textContent =
+                "No pollution reports are currently available.";
+            return;
+        }
+
+        const report = reports[0];
+        const type = report[1];
+        const location = report[4];
+
+        let cause = "";
+
+        if (type === "Plastic Waste") {
+            cause =
+                "Possible causes include improper disposal of plastic waste, single-use plastics and waste entering waterways.";
+        } else if (type === "Oil Spill") {
+            cause =
+                "Possible causes include fuel leakage, vessel accidents, improper oil handling or industrial discharge.";
+        } else if (type === "Chemical Waste") {
+            cause =
+                "Possible causes include industrial discharge, improper chemical disposal or untreated wastewater.";
+        } else if (type === "Sewage") {
+            cause =
+                "Possible causes include untreated sewage discharge, damaged drainage systems or wastewater entering the water body.";
+        } else {
+            cause =
+                "The pollution may be associated with improper waste disposal, industrial activity or other nearby human activities.";
+        }
+
+        botMsg.innerHTML = `
+            <strong>🏭 Pollution Cause Analysis</strong><br><br>
+
+            📍 <strong>Location:</strong> ${location}<br>
+            🌊 <strong>Pollution Type:</strong> ${type}<br><br>
+
+            🔎 <strong>Possible Cause:</strong><br>
+            ${cause}<br><br>
+
+            💡 <strong>Recommendation:</strong><br>
+            Inspect nearby pollution sources and monitor the affected area.
+        `;
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+
+        console.error(error);
+
+        botMsg.textContent =
+            "Unable to analyze the possible pollution causes.";
+    }
+}
+async function analyzeHealthRisk() {
+
+    const chatBox = document.getElementById("chatBox");
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "bot-message";
+    botMsg.textContent = "🩺 Analyzing health risks...";
+    chatBox.appendChild(botMsg);
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/reports"
+        );
+
+        const reports = await response.json();
+
+        if (reports.length === 0) {
+            botMsg.textContent =
+                "No pollution reports are currently available.";
+            return;
+        }
+
+        const report = reports[0];
+        const type = report[1];
+        const severity = report[2];
+
+        let risk = "";
+
+        if (type === "Oil Spill") {
+            risk = "Exposure may cause skin irritation and respiratory problems. Avoid direct contact with contaminated water.";
+        } else if (type === "Chemical Waste") {
+            risk = "Chemical contamination may cause skin, eye and respiratory irritation. Avoid contact with contaminated water.";
+        } else if (type === "Sewage") {
+            risk = "Sewage pollution may contain harmful microorganisms and can increase the risk of waterborne infections.";
+        } else if (type === "Plastic Waste") {
+            risk = "Plastic waste can create physical hazards and may contaminate marine environments with harmful substances.";
+        } else {
+            risk = "Polluted water may create health risks through direct contact or exposure to harmful contaminants.";
+        }
+
+        botMsg.innerHTML = `
+            <strong>🩺 MarineGuard Health Risk Advisor</strong><br><br>
+
+            🌊 <strong>Pollution Type:</strong> ${type}<br>
+            ⚠️ <strong>Severity:</strong> ${severity}<br><br>
+
+            <strong>Possible Health Risk:</strong><br>
+            ${risk}<br><br>
+
+            🛡️ <strong>Safety Advice:</strong><br>
+            Avoid direct contact with polluted water and follow guidance
+            from local health or environmental authorities.
+        `;
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+
+        console.error(error);
+
+        botMsg.textContent =
+            "Unable to analyze health risks.";
+    }
+}
+function showTamilResponse() {
+
+    const chatBox = document.getElementById("chatBox");
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "bot-message";
+
+    botMsg.innerHTML = `
+        <strong>🌐 MarineGuard AI Assistant – தமிழ்</strong><br><br>
+        கடல் மாசுபாடு என்பது பிளாஸ்டிக், எண்ணெய், இரசாயனக் கழிவுகள்
+        மற்றும் கழிவுநீர் போன்ற தீங்கு விளைவிக்கும் பொருட்களால்
+        கடல் நீர் மாசுபடுவதாகும்.<br><br>
+        🛡️ மாசுபாட்டைக் குறைக்க கழிவுகளை சரியாக அகற்றுதல்,
+        பிளாஸ்டிக் பயன்பாட்டைக் குறைத்தல் மற்றும் கடல் பகுதிகளை
+        தொடர்ந்து கண்காணித்தல் முக்கியம்.
+    `;
+
+    chatBox.appendChild(botMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function showHindiResponse() {
+
+    const chatBox = document.getElementById("chatBox");
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "bot-message";
+
+    botMsg.innerHTML = `
+        <strong>🌐 MarineGuard AI Assistant – हिंदी</strong><br><br>
+        समुद्री प्रदूषण का अर्थ प्लास्टिक, तेल, रासायनिक कचरे
+        और सीवेज जैसे हानिकारक पदार्थों से समुद्र का प्रदूषित होना है।<br><br>
+        🛡️ प्रदूषण को कम करने के लिए कचरे का सही निपटान,
+        प्लास्टिक का कम उपयोग और समुद्री क्षेत्रों की नियमित
+        निगरानी महत्वपूर्ण है।
+    `;
+
+    chatBox.appendChild(botMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+function setAIQuestion(question) {
+    const input = document.getElementById("userInput");
+
+    input.value = question;
+    input.focus();
+
+    document.getElementById("sendBtn").click();
+}
+
+function startVoiceQuestion() {
+
+    if (!("webkitSpeechRecognition" in window)) {
+        alert("Voice recognition is not supported in this browser.");
+        return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+
+    recognition.lang = "en-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.start();
+
+    recognition.onresult = function(event) {
+
+        const question = event.results[0][0].transcript;
+
+        document.getElementById("userInput").value = question;
+
+        document.getElementById("sendBtn").click();
+    };
+
+    recognition.onerror = function() {
+        alert("Voice recognition failed. Please try again.");
+    };
+}
+
+function checkEmergencyPollution() {
+
+    fetch("http://127.0.0.1:5000/reports")
+        .then(response => response.json())
+        .then(reports => {
+
+            const highReports = reports.filter(
+                report => report[2] === "High"
+            );
+
+            const chatBox = document.getElementById("chatBox");
+
+            const botMsg = document.createElement("div");
+            botMsg.className = "bot-message";
+
+            if (highReports.length > 0) {
+
+                botMsg.textContent =
+                    `🚨 Emergency Pollution Alert: ${highReports.length} high-severity pollution report(s) detected. Immediate inspection and monitoring should be considered for the affected areas.`;
+
+            } else {
+
+                botMsg.textContent =
+                    "🟢 No high-severity pollution reports are currently detected. Continue routine monitoring.";
+            }
+
+            chatBox.appendChild(botMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(error => {
+            console.error("Emergency alert error:", error);
+        });
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const chatBox = document.getElementById("chatBox");
+    const chatInput = document.querySelector(".chat-input");
+
+    if (chatBox && chatInput && chatInput.parentElement === chatBox) {
+        chatBox.parentElement.insertBefore(chatInput, chatBox.nextSibling);
+    }
+
+});
+</script>
+
+</body>
+</html>

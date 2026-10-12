@@ -1,0 +1,11 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+**/.env
+backend/config_backup.py
+backend/uploads/
+.vscode/
+*.log
+marine_pollution.sql

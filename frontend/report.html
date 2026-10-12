@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <h2 class="report-page-title"> Report Marine Pollution</h2>
+<p class="report-page-subtitle">
+    Help protect our oceans by reporting pollution incidents
+</p>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="marine-theme-page report-theme">
+
+<div class="report-container">
+
+    <!-- MarineGuard Logo -->
+    <div class="report-logo">
+
+        <div class="logo-side left-side">
+            <span class="ship">🚢</span>
+            <span class="wave">🌊</span>
+        </div>
+
+        <img src="images/marineguard-logo.png" alt="MarineGuard Logo">
+
+        <div class="logo-side right-side">
+            <span class="wave">🌊</span>
+            <span class="ship">🚢</span>
+        </div>
+
+    </div>
+
+    <h2>MarineGuard Report Form</h2>
+
+    <form id="reportForm">
+
+        <h3>Reporter Details</h3>
+
+        <input type="text" id="name" placeholder="Full Name" required>
+
+        <input type="email" id="email" placeholder="Email Address" required>
+
+        <input type="tel" id="mobile" placeholder="Mobile Number" required>
+
+
+        <h3>Pollution Details</h3>
+
+        <select id="pollutionType" required>
+            <option value="">Select Pollution Type</option>
+            <option>Plastic Waste</option>
+            <option>Oil Spill</option>
+            <option>Chemical Waste</option>
+            <option>Sewage</option>
+            <option>Other</option>
+        </select>
+
+        <select id="severity" required>
+            <option value="">Select Severity</option>
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+        </select>
+
+        <input type="date" id="date" required>
+
+        <input type="text" id="location" placeholder="Pollution Location" required>
+        <input type="hidden" id="latitude">
+<input type="hidden" id="longitude">
+
+        <textarea
+            id="description"
+            placeholder="Describe the pollution..."
+            rows="5"
+            required
+        ></textarea>
+
+
+        <h3>Upload Files</h3>
+
+        <label for="photo">Pollution Photo</label>
+<input type="file" id="photo" accept="image/*">
+
+<div id="photoPreview" class="photo-preview"></div>
+
+        <label for="labReport">Lab Report (PDF)</label>
+        <input type="file" id="labReport" accept=".pdf">
+
+
+        <h3>Nearby Industry (Optional)</h3>
+
+        <input
+            type="text"
+            id="industry"
+            placeholder="Industry Name"
+        >
+
+        <button type="submit">Submit Report</button>
+
+    </form>
+
+</div>
+
+<script>
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "citizen") {
+        alert("Access denied. Public Citizen only.");
+        window.location.href = "admin.html";
+    }
+</script>
+<script>
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "citizen") {
+        alert("Access denied. Public Citizen only.");
+        window.location.href = "admin.html";
+    }
+</script>
+
+<script src="script.js"></script>
+
+<script>
+document.getElementById("photo").addEventListener("change", function () {
+
+    const preview = document.getElementById("photoPreview");
+    const file = this.files[0];
+
+    preview.innerHTML = "";
+
+    if (file) {
+
+        const image = document.createElement("img");
+
+        image.src = URL.createObjectURL(file);
+
+        image.alt = "Selected Pollution Photo";
+
+        preview.appendChild(image);
+    }
+});
+</script>
+
+<script>
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            document.getElementById("latitude").value =
+                position.coords.latitude;
+
+            document.getElementById("longitude").value =
+                position.coords.longitude;
+
+            console.log("Latitude:", position.coords.latitude);
+            console.log("Longitude:", position.coords.longitude);
+        },
+        function(error) {
+            console.log("Location permission not granted.");
+        }
+    );
+}
+</script>
+
+</body>
+</html>

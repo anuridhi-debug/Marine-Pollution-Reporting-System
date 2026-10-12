@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics</title>
+
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+</head>
+<body class="marine-theme-page analytics-theme">
+
+<div class="analytics-container">
+
+<h1>🌊 MarineGuard Analytics</h1>
+
+<div class="analytics-cards">
+
+<div class="analytics-card">
+<h2 id="analyticsTotalReports">0</h2>
+<p>Total Reports</p>
+</div>
+
+<div class="analytics-card">
+<h2 id="plasticWasteCount">0</h2>
+<p>Plastic Waste</p>
+</div>
+
+<div class="analytics-card">
+<h2 id="oilSpillCount">0</h2>
+<p>Oil Spill</p>
+</div>
+
+<div class="analytics-card">
+<h2 id="chemicalWasteCount">0</h2>
+<p>Chemical Waste</p>
+</div>
+
+</div>
+
+<h2>Pollution Severity</h2>
+
+<table>
+
+<tr>
+<th>Severity</th>
+<th>Reports</th>
+</tr>
+
+<tr>
+<td>High</td>
+<td id="highSeverityCount">0</td>
+</tr>
+
+<tr>
+<td>Medium</td>
+<td id="mediumSeverityCount">0</td>
+</tr>
+
+<tr>
+<td>Low</td>
+<td id="lowSeverityCount">0</td>
+</tr>
+
+</table>
+
+<h2>Pollution Distribution</h2>
+
+<canvas id="pollutionChart" width="400" height="200"></canvas>
+
+<h2>🔥 Pollution Hotspot Map</h2>
+
+<p class="hotspot-description">
+    This map shows the geographical locations of reported marine pollution.
+    High-severity reports can be identified as potential pollution hotspots.
+</p>
+
+<div id="pollutionMap"></div>
+<div id="hotspotInsight" class="hotspot-insight">
+    🔍 Analyzing pollution hotspots...
+</div>
+<h2 class="recommendation-title">🤖 Smart Decision Recommendation</h2>
+
+<div id="decisionRecommendation" class="decision-recommendation">
+    🔍 Analyzing pollution data...
+</div>
+<h2 class="hotspot-title">📍 Top Pollution Hotspots</h2>
+
+<div id="topHotspots" class="top-hotspots">
+    <p>Analyzing hotspot locations...</p>
+</div>
+
+</div>
+
+<script>
+fetch("http://127.0.0.1:5000/pollution-type-count")
+    .then(response => response.json())
+    .then(data => {
+
+        document.getElementById("plasticWasteCount").textContent =
+            data["Plastic Waste"] || 0;
+
+        document.getElementById("oilSpillCount").textContent =
+            data["Oil Spill"] || 0;
+
+        document.getElementById("chemicalWasteCount").textContent =
+            data["Chemical Waste"] || 0;
+
+fetch("http://127.0.0.1:5000/reports")
+    .then(response => response.json())
+    .then(reports => {
+        document.getElementById("analyticsTotalReports").textContent = reports.length;
+
+fetch("http://127.0.0.1:5000/severity-count")
+    .then(response => response.json())
+    .then(data => {
+
+        document.getElementById("highSeverityCount").textContent =
+            data["High"] || 0;
+
+        document.getElementById("mediumSeverityCount").textContent =
+            data["Medium"] || 0;
+
+        document.getElementById("lowSeverityCount").textContent =
+            data["Low"] || 0;
+        
+    });    
+
+    });
+</script>
+<script>
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "citizen" && userRole !== "government") {
+        alert("Please login first.");
+        window.location.href = "login.html";
+    }
+</script>
+
+<script src="script.js"></script>
+
+<script>
+fetch("http://127.0.0.1:5000/reports")
+    .then(response => response.json())
+    .then(reports => {
+
+        const validReports = reports.filter(report =>
+            report[11] !== null &&
+            report[12] !== null &&
+            !isNaN(parseFloat(report[11])) &&
+            !isNaN(parseFloat(report[12]))
+        );
+
+        if (validReports.length === 0) {
+            document.getElementById("pollutionMap").innerHTML =
+                "<p style='text-align:center;padding:30px;'>No location data available yet.</p>";
+            return;
+        }
+
+        const firstReport = validReports[0];
+
+       const map = L.map("pollutionMap").setView(
+    [parseFloat(firstReport[11]), parseFloat(firstReport[12])],
+    12
+);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        validReports.forEach(report => {
+
+            const latitude = parseFloat(report[11]);
+            const longitude = parseFloat(report[12]);
+            const severity = report[2];
+
+            let markerColor = "green";
+
+            if (severity === "High") {
+                markerColor = "red";
+            } else if (severity === "Medium") {
+                markerColor = "orange";
+            }
+
+            L.circleMarker([latitude, longitude], {
+                radius: 9,
+                color: markerColor,
+                fillColor: markerColor,
+                fillOpacity: 0.7
+            })
+            .addTo(map)
+            .bindPopup(`
+                <b>Pollution Report</b><br>
+                <b>Location:</b> ${report[4]}<br>
+                <b>Type:</b> ${report[1]}<br>
+                <b>Severity:</b> ${severity}<br>
+                <b>Date:</b> ${report[3]}
+            `);
+        });
+
+        const heatPoints = validReports.map(report => [
+    parseFloat(report[11]),
+    parseFloat(report[12]),
+    report[2] === "High" ? 1.0 :
+    report[2] === "Medium" ? 0.6 : 0.3
+]);
+
+L.heatLayer(heatPoints, {
+    radius: 35,
+    blur: 25,
+    maxZoom: 12
+}).addTo(map);
+
+const highReports = validReports.filter(
+    report => report[2] === "High"
+);
+
+const hotspotInsight = document.getElementById("hotspotInsight");
+
+if (highReports.length > 0) {
+    const hotspotLocation = highReports[0][4];
+
+    hotspotInsight.innerHTML =
+        `🔥 <strong>Hotspot Insight:</strong> ${highReports.length} high-severity pollution report(s) detected. 
+        A potential hotspot has been identified near <strong>${hotspotLocation}</strong>.`;
+} else {
+    hotspotInsight.innerHTML =
+        `🟢 <strong>Hotspot Insight:</strong> No high-severity pollution reports detected.`;
+}
+    })
+    .catch(error => {
+        console.error("Error loading pollution map:", error);
+    });
+
+const locationData = {};
+
+validReports.forEach(report => {
+
+    const location = report[4];
+
+    if (!locationData[location]) {
+        locationData[location] = {
+            total: 0,
+            high: 0
+        };
+    }
+
+    locationData[location].total++;
+
+    if (report[2] === "High") {
+        locationData[location].high++;
+    }
+});
+
+const topLocations = Object.entries(locationData)
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 5);
+
+const hotspotContainer = document.getElementById("topHotspots");
+
+if (topLocations.length > 0) {
+
+    let tableHTML = `
+        <table class="hotspot-table">
+            <tr>
+                <th>Rank</th>
+                <th>Location</th>
+                <th>Total Reports</th>
+                <th>High Severity</th>
+            </tr>
+    `;
+
+    topLocations.forEach((item, index) => {
+
+        const location = item[0];
+        const data = item[1];
+
+        tableHTML += `
+            <tr>
+                <td class="hotspot-rank">${index + 1}</td>
+                <td>${location}</td>
+                <td>${data.total}</td>
+                <td>${data.high}</td>
+            </tr>
+        `;
+    });
+
+    tableHTML += `</table>`;
+
+    hotspotContainer.innerHTML = tableHTML;
+
+} else {
+
+    hotspotContainer.innerHTML =
+        "<p style='padding:20px;text-align:center;'>No hotspot data available.</p>";
+}
+</script>
+<script>
+fetch("http://127.0.0.1:5000/reports")
+    .then(response => response.json())
+    .then(reports => {
+
+        const locationData = {};
+
+        reports.forEach(report => {
+
+            const location = report[4];
+
+            if (!location) {
+                return;
+            }
+
+            if (!locationData[location]) {
+                locationData[location] = {
+                    total: 0,
+                    high: 0
+                };
+            }
+
+            locationData[location].total++;
+
+            if (report[2] === "High") {
+                locationData[location].high++;
+            }
+        });
+
+        const topLocations = Object.entries(locationData)
+            .sort((a, b) => b[1].total - a[1].total)
+            .slice(0, 5);
+
+        const hotspotContainer =
+            document.getElementById("topHotspots");
+
+        if (topLocations.length === 0) {
+            hotspotContainer.innerHTML =
+                "<p style='padding:20px;text-align:center;'>No hotspot data available.</p>";
+            return;
+        }
+
+        let tableHTML = `
+            <table class="hotspot-table">
+                <tr>
+                    <th>Rank</th>
+<th>Location</th>
+<th>Total Reports</th>
+<th>High Severity</th>
+<th>Risk Level</th>
+        `;
+
+       topLocations.forEach((item, index) => {
+
+    const location = item[0];
+    const data = item[1];
+
+    let riskLevel = "Low";
+
+    if (data.high >= 2 || data.total >= 5) {
+        riskLevel = "High";
+    } else if (data.high >= 1 || data.total >= 3) {
+        riskLevel = "Medium";
+    }
+
+    tableHTML += `
+        <tr>
+            <td class="hotspot-rank">${index + 1}</td>
+            <td>${location}</td>
+            <td>${data.total}</td>
+            <td>${data.high}</td>
+            <td>
+                <span class="risk-badge risk-${riskLevel.toLowerCase()}">
+                    ${riskLevel}
+                </span>
+            </td>
+        </tr>
+    `;
+});
+
+        tableHTML += `
+            </table>
+        `;
+
+        hotspotContainer.innerHTML = tableHTML;
+    })
+    .catch(error => {
+        console.error("Error loading hotspot data:", error);
+    });
+</script>
+<script>
+fetch("http://127.0.0.1:5000/reports")
+    .then(response => response.json())
+    .then(reports => {
+
+        const totalReports = reports.length;
+
+        const highReports = reports.filter(
+            report => report[2] === "High"
+        ).length;
+
+        const mediumReports = reports.filter(
+            report => report[2] === "Medium"
+        ).length;
+
+        const recommendation =
+            document.getElementById("decisionRecommendation");
+
+        if (totalReports === 0) {
+
+            recommendation.innerHTML =
+                "🟢 <strong>Recommendation:</strong> No pollution reports are currently available for analysis.";
+
+        } else if (highReports >= 2) {
+
+            recommendation.innerHTML =
+                `🔴 <strong>Immediate Action Recommended:</strong>
+                ${highReports} high-severity pollution reports detected.
+                Government officers should prioritize inspection and investigation of affected areas.`;
+
+        } else if (highReports === 1) {
+
+            recommendation.innerHTML =
+                `🟠 <strong>Priority Monitoring Recommended:</strong>
+                A high-severity pollution report has been detected.
+                The affected area should be monitored and inspected.`;
+
+        } else if (mediumReports >= 2) {
+
+            recommendation.innerHTML =
+                `🟡 <strong>Preventive Action Recommended:</strong>
+                Multiple medium-severity pollution reports have been detected.
+                Preventive monitoring is recommended to avoid escalation.`;
+
+        } else {
+
+            recommendation.innerHTML =
+                `🟢 <strong>Routine Monitoring Recommended:</strong>
+                Current pollution reports show relatively lower severity.
+                Continue regular monitoring of reported areas.`;
+        }
+    })
+    .catch(error => {
+        console.error("Error generating recommendation:", error);
+    });
+</script>
+
+</body>
+</html>

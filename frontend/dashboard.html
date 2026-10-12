@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page">
+
+<div class="dashboard-container">
+
+<h1>🌊 MarineGuard citizen Dashboard</h1>
+
+<h2>Protect • Monitor • Report • Act</h2>
+
+<div class="dashboard-cards">
+
+<div class="dashboard-card">
+<h3 id="totalReports">0</h3>
+<p>Total Reports</p>
+</div>
+
+<div class="dashboard-card">
+<h3 id="registeredUsers">0</h3>
+<p>Registered Users</p>
+</div>
+
+<div class="dashboard-card">
+<h3 id="highRiskAreas">0</h3>
+<p>High Risk Areas</p>
+</div>
+
+<div class="dashboard-card">
+<h3 id="pendingReports">0</h3>
+<p>Pending Reports</p>
+</div>
+
+</div>
+
+<h2>Quick Actions</h2>
+
+<div class="action-buttons">
+
+<a href="report.html">📝 Report Pollution</a>
+
+   <a href="my-reports.html">📋 My Reports</a>
+
+    <a href="analytics.html">📊 Analytics</a>
+
+    <a href="chatbot.html">🤖 AI Assistant</a>
+
+</div>
+
+<h2>Recent Pollution Reports</h2>
+
+<table id="reportsTable">
+
+<tr>
+<th>Location</th>
+<th>Type</th>
+<th>Severity</th>
+<th>Status</th>
+</tr>
+
+<tr>
+<td>Marina Beach</td>
+<td>Plastic Waste</td>
+<td>High</td>
+<td>Pending</td>
+</tr>
+
+<tr>
+<td>Kovalam Beach</td>
+<td>Oil Spill</td>
+<td>Medium</td>
+<td>Resolved</td>
+</tr>
+
+<tr>
+<td>Elliot Beach</td>
+<td>Chemical Waste</td>
+<td>High</td>
+<td>Investigating</td>
+</tr>
+
+</table>
+
+</div>
+
+<script>
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "citizen") {
+        alert("Access denied. Public Citizen only.");
+        window.location.href = "admin.html";
+    }
+</script>
+
+<script src="script.js"></script>
+
+</body>
+</html>

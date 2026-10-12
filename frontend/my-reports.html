@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarineGuard | My Reports</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background:
+                linear-gradient(
+                    rgba(0, 35, 55, 0.70),
+                    rgba(0, 18, 38, 0.82)
+                ),
+                url("https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=2000&q=85")
+                center / cover fixed no-repeat;
+            color: white;
+        }
+
+        .my-reports-container {
+            width: min(1100px, 92%);
+            margin: 35px auto;
+            padding: 30px 30px 35px;
+
+            background: rgba(20, 55, 70, 0.58);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 28px;
+
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+        }
+
+        .my-reports-container h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .my-reports-subtitle {
+            text-align: center;
+            color: #d9f7ff;
+            margin-bottom: 25px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 18px;
+            border-radius: 25px;
+
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+
+            background: rgba(255,255,255,0.13);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: #006994;
+        }
+
+        .reports-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 18px;
+}
+
+#myReportsTable {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 16px;
+
+    color: white;
+}
+
+#myReportsTable th {
+    padding: 15px 12px;
+
+    background: rgba(0, 105, 148, 0.75);
+    color: white;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+#myReportsTable td {
+    padding: 14px 12px;
+
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff !important;
+
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+
+    text-align: center;
+    vertical-align: middle;
+
+    font-size: 14px;
+}
+
+#myReportsTable tbody tr:hover td {
+    background: rgba(255,255,255,0.13);
+    color: white !important;
+}
+
+#myReportsTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status badges */
+.status {
+    display: inline-block;
+
+    padding: 6px 13px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.pending {
+    background: #fff0d6;
+    color: #e65100 !important;
+}
+
+.approved {
+    background: #e6f7ed;
+    color: #2e7d32 !important;
+}
+
+.rejected {
+    background: #ffe5e5;
+    color: #c62828 !important;
+}
+
+.no-reports {
+    text-align: center;
+    padding: 35px !important;
+    color: #d9f7ff !important;
+}
+.page-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 20px;
+
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+}
+
+.page-brand img {
+    width: 42px;
+    height: 42px;
+
+    object-fit: cover;
+    border-radius: 50%;
+
+    background: white;
+    border: 2px solid rgba(255,255,255,0.7);
+}
+    </style>
+</head>
+
+<body>
+
+<div class="my-reports-container">
+
+    <div class="page-brand">
+    <img src="images/marineguard-logo.png" alt="MarineGuard">
+    <span>MarineGuard</span>
+</div>
+
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+
+    <h1>🌊 My Pollution Reports</h1>
+
+    <p class="my-reports-subtitle">
+        View and track your submitted marine pollution reports
+    </p>
+
+    <div class="reports-table-wrapper">
+        <table id="myReportsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Pollution Type</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="myReportsBody">
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "citizen") {
+        alert("Access denied. Public Citizen only.");
+        window.location.href = "login.html";
+    }
+
+    async function loadMyReports() {
+        try {
+            const response = await fetch("http://127.0.0.1:5000/reports");
+            const reports = await response.json();
+
+            const tbody = document.getElementById("myReportsBody");
+
+            /*
+             * Try to identify the logged-in user's email.
+             * Different login implementations may use different keys.
+             */
+            const userEmail =
+                localStorage.getItem("userEmail") ||
+                localStorage.getItem("email");
+
+            let myReports = reports;
+
+            if (userEmail) {
+                myReports = reports.filter(
+                    report => report[7] === userEmail
+                );
+            }
+
+            if (myReports.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="no-reports">
+                            📭 No pollution reports found.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            myReports.forEach(report => {
+
+                const status = report[8] || "Pending";
+
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${report[0]}</td>
+                    <td>${report[3]}</td>
+                    <td>${report[4]}</td>
+                    <td>${report[1]}</td>
+                    <td>${report[2]}</td>
+                    <td>
+                        <span class="status ${status.toLowerCase()}">
+                            ${status}
+                        </span>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+        } catch (error) {
+            console.error("Error loading reports:", error);
+
+            document.getElementById("myReportsBody").innerHTML = `
+                <tr>
+                    <td colspan="6" class="no-reports">
+                        Unable to load reports.
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    loadMyReports();
+</script>
+
+</body>
+</html>
